@@ -10,7 +10,7 @@ on:
 # and know which files actually got changed
 # REF https://github.com/vercel/turborepo/issues/9320
 env:
-  TURBO_SCM_BASE: origin/main # ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+  TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
 
@@ -45,9 +45,9 @@ jobs:
 
       - name: Check types
         run: pnpm exec turbo run check-types --affected
-      #
-      # - name: LS
-      #   run: pnpm exec turbo run check-types --affected
+
+      - name: LS
+        run: pnpm exec turbo ls --affected
  
  #      - name: Build
  #        run: pnpm build
