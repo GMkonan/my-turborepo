@@ -9,9 +9,7 @@ on:
 # Important for turbo "--affected" to correctly pick base branch to compare changes
 # and know which files actually got changed
 # REF https://github.com/vercel/turborepo/issues/9320
-env:
-  TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
- 
+
 jobs:
   build:
     name: Build and Test
@@ -25,6 +23,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
+          filter: "blob:none"
           fetch-depth: 0
  
       - uses: pnpm/action-setup@v3
@@ -41,7 +40,18 @@ jobs:
         run: pnpm install
 
       - name: Check types
-        run: pnpm run ci:check-types
+        run: pnpm exec turbo run check-types --affected
+        env:
+          TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          TURBO_TELEMETRY_DISABLED: 1
+          DO_NOT_TRACK: 1
+
+      - name: LS
+        run: pnpm exec turbo ls --affected
+        env:
+          TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          TURBO_TELEMETRY_DISABLED: 1
+          DO_NOT_TRACK: 1
  
  #      - name: Build
  #        run: pnpm build
