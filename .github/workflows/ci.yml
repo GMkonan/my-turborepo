@@ -35,7 +35,7 @@ jobs:
         run: pnpm install
 
       - name: Check types
-        run: turbo run check-types
+        run: pnpm run ci:check-types
  
  #      - name: Build
  #        run: pnpm build
