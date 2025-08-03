@@ -5,6 +5,12 @@ on:
   #   branches: ["main"]
   pull_request:
     types: [opened, synchronize]
+
+# Important for turbo "--affected" to correctly pick base branch to compare changes
+# and know which files actually got changed
+# REF https://github.com/vercel/turborepo/issues/9320
+env:
+  TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
  
 jobs:
   build:
