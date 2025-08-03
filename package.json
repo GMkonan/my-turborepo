@@ -7,7 +7,8 @@
 		"lint": "turbo run lint",
 		"format": "prettier --write \"**/*.{ts,tsx,md}\"",
 		"check-types": "turbo run check-types",
-		"ci:check-types": "turbo run check-types --affected"
+		"ci:check-types": "turbo run check-types --affected",
+		"ci:check": "turbo ls --affected"
 	},
 	"devDependencies": {
 		"prettier": "^3.6.2",
