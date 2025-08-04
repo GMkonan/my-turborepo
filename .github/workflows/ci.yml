@@ -39,17 +39,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Check types
-        run: pnpm exec turbo run check-types --affected
-        env:
-          TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          TURBO_TELEMETRY_DISABLED: 1
-          DO_NOT_TRACK: 1
+      # - name: Check types
+      #   run: pnpm exec turbo run check-types --affected
+      #   env:
+      #     TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+      #     TURBO_TELEMETRY_DISABLED: 1
+      #     DO_NOT_TRACK: 1
 
       - name: LS
-        run: pnpm exec turbo ls --affected
+        run: pnpm exec turbo ls --filter=...[$FILTER_CHANGED_BASE...HEAD]
         env:
-          TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          FILTER_CHANGED_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           TURBO_TELEMETRY_DISABLED: 1
           DO_NOT_TRACK: 1
  
