@@ -1,14 +1,13 @@
 name: CI
  
 on:
-  # push:
-  #   branches: ["main"]
   pull_request:
     types: [opened, synchronize]
 
-# Important for turbo "--affected" to correctly pick base branch to compare changes
-# and know which files actually got changed
-# REF https://github.com/vercel/turborepo/issues/9320
+# turbo flag "--affected" doesn't seem to be working properly
+# REF https://github.com/vercel/turborepo/issues/10688
+# Using the filter tag to achieve a similar result
+# REF https://github.com/vercel/turborepo/discussions/800#discussioncomment-4595915
 
 jobs:
   build:
@@ -18,6 +17,10 @@ jobs:
     # env:
     #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    env:
+      FILTER_CHANGED_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+      TURBO_TELEMETRY_DISABLED: 1
+      DO_NOT_TRACK: 1
  
     steps:
       - name: Check out code
@@ -26,32 +29,36 @@ jobs:
           filter: "blob:none"
           fetch-depth: 0
  
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 8
- 
+      - uses: pnpm/action-setup@v4
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20.x
           cache: 'pnpm'
  
       - name: Install dependencies
         run: pnpm install
 
-      # - name: Check types
-      #   run: pnpm exec turbo run check-types --affected
       #   env:
       #     TURBO_SCM_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
       #     TURBO_TELEMETRY_DISABLED: 1
       #     DO_NOT_TRACK: 1
 
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/apps/docs/.next/cache
+            ${{ github.workspace }}/apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: LS
         run: pnpm exec turbo ls --filter=...[$FILTER_CHANGED_BASE...HEAD]
-        env:
-          FILTER_CHANGED_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          TURBO_TELEMETRY_DISABLED: 1
-          DO_NOT_TRACK: 1
+
+      - name: Check types
+        run: pnpm exec turbo run check-types --filter=...[$FILTER_CHANGED_BASE...HEAD]
+
+
+
  
  #      - name: Build
  #        run: pnpm build
